@@ -1,6 +1,7 @@
 import numpy as np
 import math
 import time
+from enum import Enum
 
 class Vehicle:
     def __init__(self, position, speed, angle):
@@ -35,6 +36,47 @@ class Autopilot:
         angle_diff = math.atan2(dy, dx) - follower.angle
         # Увеличиваем/уменьшаем угол преследователя
         follower.angle += angle_diff
+
+    # Метод следования с применеием нечеткой логики
+    # Вначале известно точное расстояние до лидера,
+    # но намеренно уменьшается для добавления нечеткости
+    def follow_leader_fuzzy(self, leader, follower):
+        # Рассчитываем расстояние до лидера по осям X и Y
+        dx = leader.position[0] - follower.position[0]
+        dy = leader.position[1] - follower.position[1]
+        # Рассчитываем текущее расстояние до лидера
+        current_distance = math.sqrt(dx * dx + dy * dy)
+
+        current_distance = decrease_distance_accuracy(current_distance)
+        # Рассчитываем требуемое изменение скорости
+        speed_diff = current_distance- self.leader_distance  
+        # Увеличиваем/уменьшаем скорость преследователя
+        follower.speed += speed_diff
+        
+        # Рассчитываем требуемое изменение угла
+        angle_diff = math.atan2(dy, dx) - follower.angle
+        # Увеличиваем/уменьшаем угол преследователя
+        follower.angle += angle_diff
+
+def decrease_distance_accuracy(distance):
+    if (distance <= Distance.CLOSE):
+        return Distance.CLOSE / 2
+    if (distance <= Distance.NOT_FAR):
+        return Distance.NOT_FAR / 2
+    if (distance <= Distance.FAR):
+        return Distance.FAR / 2
+    if (distance <= Distance.TOO_FAR):
+        return Distance.TOO_FAR
+        
+        
+        
+
+class Distance(Enum):
+    CLOSE = 10
+    NOT_FAR = 50
+    FAR = 100
+    TOO_FAR = 200
+Distance = Enum("Distance", ["CLOSE", "NOT_FAR", "FAR"])
         
 def update_distance(autopilot, leader, follower):
     # Рассчитываем расстояние до лидера по осям X и Y
@@ -118,14 +160,14 @@ log_number = 0
 with open(filename, 'w') as f:
         f.write('')
 # Следование за "лидером"
-autopilot.follow_leader(leader, follower)
+autopilot.follow_leader_fuzzy(leader, follower)
 
 # Выполняем итерации следования
 while True:
     # Обновляем параметры лидера 
     update_leader_parameters(leader)
     # Выполняем следование
-    autopilot.follow_leader(leader, follower)
+    autopilot.follow_leader_fuzzy(leader, follower)
     tick()
     # Лидер едет по спирали
     # leader.angle += math.pi / 180 * 15
