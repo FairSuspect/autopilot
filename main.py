@@ -46,8 +46,8 @@ class Autopilot:
         dy = leader.position[1] - follower.position[1]
         # Рассчитываем текущее расстояние до лидера
         current_distance = math.sqrt(dx * dx + dy * dy)
-
-        current_distance = decrease_distance_accuracy(current_distance)
+        print(current_distance)
+        # current_distance = decrease_distance_accuracy(current_distance)
         # Рассчитываем требуемое изменение скорости
         speed_diff = current_distance- self.leader_distance  
         # Увеличиваем/уменьшаем скорость преследователя
@@ -59,14 +59,13 @@ class Autopilot:
         follower.angle += angle_diff
 
 def decrease_distance_accuracy(distance):
-    if (distance <= Distance.CLOSE):
-        return Distance.CLOSE / 2
-    if (distance <= Distance.NOT_FAR):
-        return Distance.NOT_FAR / 2
-    if (distance <= Distance.FAR):
-        return Distance.FAR / 2
-    if (distance <= Distance.TOO_FAR):
-        return Distance.TOO_FAR
+    if (distance <= Distance.CLOSE.value):
+        return Distance.CLOSE.value / 2
+    if (distance <= Distance.NOT_FAR.value):
+        return Distance.NOT_FAR.value / 2
+    if (distance <= Distance.FAR.value):
+        return Distance.FAR.value / 2
+    return Distance.TOO_FAR.value
         
         
         
@@ -76,7 +75,7 @@ class Distance(Enum):
     NOT_FAR = 50
     FAR = 100
     TOO_FAR = 200
-Distance = Enum("Distance", ["CLOSE", "NOT_FAR", "FAR"])
+Distance = Enum("Distance", ["CLOSE", "NOT_FAR", "FAR", "TOO_FAR"])
         
 def update_distance(autopilot, leader, follower):
     # Рассчитываем расстояние до лидера по осям X и Y
@@ -165,13 +164,13 @@ autopilot.follow_leader_fuzzy(leader, follower)
 # Выполняем итерации следования
 while True:
     # Обновляем параметры лидера 
-    update_leader_parameters(leader)
+    # update_leader_parameters(leader)
     # Выполняем следование
     autopilot.follow_leader_fuzzy(leader, follower)
     tick()
     # Лидер едет по спирали
-    # leader.angle += math.pi / 180 * 15
-    # leader.speed += 1
+    leader.angle += math.pi / 180 * 15
+    leader.speed += 1
     print(leader.position)
     print(follower.position)
     show_positions(filename)
